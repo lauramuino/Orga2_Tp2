@@ -35,9 +35,9 @@ void decode_c(unsigned char* src,
     unsigned int cantValores = width*height*3;
     unsigned char loscuatro[4];
     unsigned char caracter;
-	unsigned char code1,code2,op1,op2;
+	//unsigned char code1,code2,op1,op2;
     unsigned int pcode = 0;
-    while(p < 48)
+    while(p < cantValores && caracter != 0 )
     {
 		printf("Iteracion %d \n",p);
         caracter = 0;
@@ -52,10 +52,10 @@ void decode_c(unsigned char* src,
         for(i = 0;i<4;i++) 
         {
             caracter = caracter << 2;
-			unsigned char parte = 3;// & loscuatro[3-i];
-            unsigned char mod = 12;// & loscuatro[3-i];
-			//mod = mod >> 2;
-			code1 = loscuatro[3-i] & 1; //Obtengo bit menos significativo
+			unsigned char parte = 3 & loscuatro[3-i];
+            unsigned char mod = 12 & loscuatro[3-i];
+			mod = mod >> 2;
+			/*code1 = loscuatro[3-i] & 1; //Obtengo bit menos significativo
 			code1 = code1 << 1;
 			code2 = loscuatro[3-i] & 2; //Obtengo 2do bit menos significativo
 			code2 = code2 >> 1;
@@ -65,7 +65,7 @@ void decode_c(unsigned char* src,
 			op2 = loscuatro[3-i] & 8; //Obtengo 4to bit menos significativo
 			op2 = op2 >> 2;
 			mod  = op1 + op2;
-			
+			*/
 			printf("Code: %u Op: %u \n",(unsigned int)parte,(unsigned int)mod);
 			
             switch(mod)
@@ -78,7 +78,9 @@ void decode_c(unsigned char* src,
                 case 3: parte = (~parte) % 4;
                         break;
             }
+            parte = 3 & parte;
             caracter = caracter + parte;
+			printf("Code resultante: %u \n",(unsigned int)parte);
         }
         printf("Caracter final: %u \n", (unsigned int)caracter);
 		code[pcode] = caracter;

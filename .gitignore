@@ -2,7 +2,8 @@
 
 *.o
 *.pyc
-
+bin/
+solucion/src/tp2
 #Logs and databases#
 
 *.log
