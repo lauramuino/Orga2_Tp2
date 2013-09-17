@@ -34,19 +34,19 @@ void decode_c(unsigned char* src,
     unsigned int p = 0;
     unsigned int cantValores = width*height*3;
     unsigned char loscuatro[4];
-    unsigned char caracter;
+    unsigned char caracter = 1;
 	//unsigned char code1,code2,op1,op2;
     unsigned int pcode = 0;
     while(p < cantValores && caracter != 0 )
     {
-		printf("Iteracion %d \n",p);
+		//printf("Iteracion %d \n",p);
         caracter = 0;
         unsigned int i;
 
         for(i = 0;i<4;i++)
         {
             loscuatro[i] = src[p + i];
-			printf("%u \n",(unsigned int)loscuatro[i]);
+			//printf("%u \n",(unsigned int)loscuatro[i]);
             
         }  
         for(i = 0;i<4;i++) 
@@ -55,18 +55,7 @@ void decode_c(unsigned char* src,
 			unsigned char parte = 3 & loscuatro[3-i];
             unsigned char mod = 12 & loscuatro[3-i];
 			mod = mod >> 2;
-			/*code1 = loscuatro[3-i] & 1; //Obtengo bit menos significativo
-			code1 = code1 << 1;
-			code2 = loscuatro[3-i] & 2; //Obtengo 2do bit menos significativo
-			code2 = code2 >> 1;
-			parte = code1 + code2;
-			op1 = loscuatro[3-i] & 4; //Obtengo 3er bit menos significativo
-			op1 = op1 >> 1;
-			op2 = loscuatro[3-i] & 8; //Obtengo 4to bit menos significativo
-			op2 = op2 >> 2;
-			mod  = op1 + op2;
-			*/
-			printf("Code: %u Op: %u \n",(unsigned int)parte,(unsigned int)mod);
+			//printf("Code: %u Op: %u \n",(unsigned int)parte,(unsigned int)mod);
 			
             switch(mod)
             {
@@ -80,16 +69,14 @@ void decode_c(unsigned char* src,
             }
             parte = 3 & parte;
             caracter = caracter + parte;
-			printf("Code resultante: %u \n",(unsigned int)parte);
+			//printf("Code resultante: %u \n",(unsigned int)parte);
         }
-        printf("Caracter final: %u \n", (unsigned int)caracter);
+        //printf("Caracter final: %c \n", caracter);
 		code[pcode] = caracter;
-		printf("En la posicion: %u \n", pcode);
+		//printf("En la posicion: %u \n", pcode);
 		pcode++;
         p = p + 4;
     }
-    //code[pcode] = 0;
-    
 }
 
 
