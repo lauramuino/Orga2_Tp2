@@ -27,7 +27,7 @@ testDiff() {
         FILENAME=$(basename $frame)
         CFILE=$TMPFOLDER/c/$FILENAME
         ASMFILE=$TMPFOLDER/asm/$FILENAME
-        $DIFF $DIFFFLAGS $CFILE $ASMFILE  0
+        $DIFF $DIFFFLAGS $CFILE $ASMFILE 5
 
         if [ $? != "0" ]; then
             echo "ERROR EN $FILENAME"
@@ -50,16 +50,16 @@ do
 	echo 'Procesando archivo: ' $file '\n'
 
 	# color_filter
-    testDiff $file fcolor 29 97 169 5000
-    testDiff $file fcolor 92 90 55 2000
-    testDiff $file fcolor 92 90 55 10000
-    testDiff $file fcolor 200 20 20 16000
-    testDiff $file fcolor 20 20 200 16000
+    testDiff $file fcolor 29 97 169 71
+    testDiff $file fcolor 92 90 55 45
+    testDiff $file fcolor 92 90 55 100
+    testDiff $file fcolor 200 20 20 126
+    testDiff $file fcolor 20 20 200 126
 
     # miniature
     testDiff $file miniature 0.2 0.9 1
-    testDiff $file miniature 0.4 0.8 10
-    testDiff $file miniature 0.3 0.85 20
+    testDiff $file miniature 0.4 0.8 4
+    testDiff $file miniature 0.3 0.85 7
 
 done < $TESTINFILE
 

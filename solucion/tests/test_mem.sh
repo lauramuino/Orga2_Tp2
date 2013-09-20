@@ -20,12 +20,12 @@ do
 	echo 'Procesando archivo: ' $file '\n'
 
     # fcolor
-	$VALGRIND $VALGRINDFLAGS $BINFILE --frames $FRAMEFOLDER -i c fcolor $file 10 100 20 10000
+	$VALGRIND $VALGRINDFLAGS $BINFILE --frames $FRAMEFOLDER -i c fcolor $file 10 100 20 100
 	if [ $? != "0" ]; then
 		OKVALGRIND=0
 	fi
 
-	$VALGRIND $VALGRINDFLAGS $BINFILE --frames $FRAMEFOLDER -i asm fcolor $file 10 100 20 10000
+	$VALGRIND $VALGRINDFLAGS $BINFILE --frames $FRAMEFOLDER -i asm fcolor $file 10 100 20 100
 	if [ $? != "0" ]; then
 		OKVALGRIND=0
 	fi

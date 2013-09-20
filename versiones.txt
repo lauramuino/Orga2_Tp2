@@ -1,2 +1,2 @@
-
+v2 - Ordenado los parametros del decode en tp2.c y modificado el comentario del prototipo de la funcion en el asm.
 v1 - version inicial
