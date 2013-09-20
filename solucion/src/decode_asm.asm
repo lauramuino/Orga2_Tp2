@@ -20,6 +20,7 @@ mask_shifteo:	db 0x00,0x04,0x08,0x0C,0x0D,0x0D,0x0D,0x0D
 section .text
 ;void decode_asm(unsigned char *src,
 ;              unsigned char *code,
+;              int size,
 ;              int width,
 ;              int height);
 
@@ -30,6 +31,8 @@ decode_asm:
 	push R12
 	;Mover a xmm0 16 bytes de imagen
 .hay_mas:
+	cmp EDX, 0
+	je .fin
 	pxor XMM0, XMM0 ;Vacio XMM0
 	movdqu XMM0, [RDI] ;Cargo 16 bytes en XMM0
 	
@@ -112,9 +115,12 @@ decode_asm:
 	
 	mov RCX, 4 ;Por cada byte
 .cargar_string:
-	cmp BL, 0 ;Comparo por si es el final del mensaje
+	;cmp BL, 0 ;Comparo por si es el final del mensaje
 	mov byte [RSI], BL ;Inserto el caracter en el mensaje
-	je .fin ;Si era un caracter final, salir
+	dec EDX
+	cmp EDX, 0
+	je .fin
+	;je .fin ;Si era un caracter final, salir
 	lea RSI, [RSI+1] ;Hay mas caracteres
 	shr EBX, 8 ;Pongo en la parte baja el proximo caracter
 	loop .cargar_string

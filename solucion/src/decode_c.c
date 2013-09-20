@@ -37,7 +37,7 @@ void decode_c(unsigned char* src,
     unsigned char caracter = 1;
 	//unsigned char code1,code2,op1,op2;
     unsigned int pcode = 0;
-    while(p < cantValores && caracter != 0 )
+    while(size != 0/* && p < cantValores && caracter != 0 */)
     {
 		//printf("Iteracion %d \n",p);
         caracter = 0;
@@ -76,6 +76,7 @@ void decode_c(unsigned char* src,
 		//printf("En la posicion: %u \n", pcode);
 		pcode++;
         p = p + 4;
+		size--;
     }
 }
 
