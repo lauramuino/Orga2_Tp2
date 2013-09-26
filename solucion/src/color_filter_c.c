@@ -17,7 +17,6 @@ int calcularDistancia(unsigned char* pixel,unsigned char rc,unsigned char gc,uns
 	return res;
 }
 
-
 void color_filter_c(unsigned char *src,
                     unsigned char *dst,
                     unsigned char rc,

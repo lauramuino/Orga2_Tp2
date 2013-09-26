@@ -519,13 +519,14 @@ void aplicar_decode   (const char *implementacion,
 		proceso = decode_asm;
 	}
 
-    proceso((unsigned char*)src->imageData, (unsigned char*)mensaje_salida, long_texto, src->height, src->width);
+    proceso((unsigned char*)src->imageData, (unsigned char*)mensaje_salida, long_texto, src->width, src->height);
 
 	// Guardo imagen y libero las imagenes
     char filename[255];
         
     sprintf(filename,"%s.mensaje.%s.txt",archivo_entrada,implementacion);
     FILE* decoded_txt = fopen(filename,"w");
+    mensaje_salida[long_texto-1]='\0';
     fprintf(decoded_txt,"%s",mensaje_salida);
     fclose(decoded_txt);
 	printf ( "  Salida en          : %s\n", filename);

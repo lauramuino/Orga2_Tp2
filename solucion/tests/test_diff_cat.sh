@@ -28,7 +28,7 @@ runTest() {
             FILENAME=$(basename $frame)
             CATFILE=$TMPFOLDER/extracted/$FILENAME
             ASMFILE=$TMPFOLDER/asm/$FILENAME
-            $DIFF $DIFFFLAGS $CATFILE $ASMFILE 5
+            $DIFF $DIFFFLAGS $CATFILE $ASMFILE 8
 
             if [ $? != "0" ]; then
                 echo "ERROR EN $FILENAME"
@@ -57,6 +57,6 @@ echo "Test de filtros finalizados correctamente"
 echo "Test de decode"
 $BINFILE decode -i c $VIDEODIR/$FILE
 $BINFILE decode -i asm $VIDEODIR/$FILE
-echo 543154df9f081f6799c2cb7c168878e6\ \ $VIDEODIR/$FILE.mensaje.c.txt > check
-echo 543154df9f081f6799c2cb7c168878e6\ \ $VIDEODIR/$FILE.mensaje.asm.txt >> check
+echo 1018945f9c16fa236d21f76a0f8bedd9\ \ $VIDEODIR/$FILE.mensaje.c.txt > check
+echo 1018945f9c16fa236d21f76a0f8bedd9\ \ $VIDEODIR/$FILE.mensaje.asm.txt >> check
 md5sum -c check
