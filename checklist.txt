@@ -1,0 +1,14 @@
+Checklist de TP2
+
+
+-Implementar fcolor:
+	-C------------------Listo!
+	-ASM----------------
+	
+-Implementar miniature:
+	-C------------------
+	-ASM----------------
+	
+-Implementar decode:
+	-C------------------Listo!
+	-ASM----------------Listo!
