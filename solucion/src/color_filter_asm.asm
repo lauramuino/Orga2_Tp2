@@ -100,8 +100,6 @@ color_filter_asm:
 	mov R14, RAX ;Cargo parte baja en R14
 	;R14 = width*height*3 = CANT_ELEMENTOS.
 	
-	add RDI,  210000
-	add RSI,  210000
 .inicio:
 	cmp R14, 0
 	jl .fin
@@ -196,10 +194,10 @@ color_filter_asm:
 	movdqu XMM14, [color_deseado]
 	
 	;Resto (rc,gc,bc) a todos los valores de XMM1
-	psubusb XMM1, XMM14
+	psubw XMM1, XMM14
 	
 	;Resto (rc,gc,bc) a todos los valores de XMM2
-	psubusb XMM2, XMM14
+	psubw XMM2, XMM14
 	
 	;Tengo en XMM1 = (word)rgb(canal - canal_c) de los 2 primeros pixeles
 	;Tengo en XMM2 = (word)rgb(canal - canal_c) de los 2 ultimos pixeles

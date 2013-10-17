@@ -3,7 +3,7 @@ Checklist de TP2
 
 -Implementar fcolor:
 	-C------------------Listo!
-	-ASM----------------
+	-ASM----------------Listo!
 	
 -Implementar miniature:
 	-C------------------
