@@ -114,7 +114,7 @@ int main( int argc, char** argv ) {
 				abort ( );
 		}
 	}
-
+	if (tiempo == 0) cant_iteraciones = 1;
 	// Verifico nombre del proceso
 	char *nomb_proceso = argv[optind++];
 
@@ -162,44 +162,66 @@ int main( int argc, char** argv ) {
             exit (EXIT_FAILURE) ;
         }
 	}
+	unsigned long long int start, end, result;
+	int its = cant_iteraciones;
+	FILE* tiempo_txt;
+	if(tiempo){
+		char tiempo_filename[255];
+		sprintf(tiempo_filename,"%s.tiempos.%s.txt",nomb_proceso,nombre_implementacion);
+		tiempo_txt = fopen(tiempo_filename,"w");
+	}
+	
+	while(cant_iteraciones > 0){
+		start = 0;
+		end = 0;
+		MEDIR_TIEMPO_START(start);
+		// Imprimo info
+		printf ( "Procesando...\n");
+		printf ( "  Filtro             : %s\n", nomb_proceso);
+		printf ( "  Implementación     : %s\n", nombre_implementacion);
+		printf ( "  Archivo de entrada : %s\n", nomb_arch_entrada);
 
-	// Imprimo info
-	printf ( "Procesando...\n");
-	printf ( "  Filtro             : %s\n", nomb_proceso);
-	printf ( "  Implementación     : %s\n", nombre_implementacion);
-	printf ( "  Archivo de entrada : %s\n", nomb_arch_entrada);
+		// Procesar imagen
+		if (strcmp(nomb_proceso, "fcolor") == 0) {
+			int threshold, gc, rc, bc;
+			threshold = atoi(argv[argc - 1]);
+			bc = atoi(argv[argc - 2]);
+			gc = atoi(argv[argc - 3]);
+			rc = atoi(argv[argc - 4]);
+			aplicar_filtro_color(nombre_implementacion, nomb_arch_entrada,
+								verbose, frames, carpeta_frames,
+								rc, gc, bc, threshold);
+		} else if (strcmp(nomb_proceso, "decode") == 0) {
 
-	// Procesar imagen
-    if (strcmp(nomb_proceso, "fcolor") == 0) {
-        int threshold, gc, rc, bc;
-        threshold = atoi(argv[argc - 1]);
-        bc = atoi(argv[argc - 2]);
-        gc = atoi(argv[argc - 3]);
-        rc = atoi(argv[argc - 4]);
-		aplicar_filtro_color(nombre_implementacion, nomb_arch_entrada,
-		                    verbose, frames, carpeta_frames,
-		                    rc, gc, bc, threshold);
-	} else if (strcmp(nomb_proceso, "decode") == 0) {
+			aplicar_decode(nombre_implementacion, nomb_arch_entrada,
+							verbose);
+		
 
-        aplicar_decode(nombre_implementacion, nomb_arch_entrada,
-                        verbose);
-       
+		} else if (strcmp(nomb_proceso, "miniature") == 0) {
+			int iters;
+			float bottomPlane, topPlane;
+			iters = atoi(argv[argc - 1]);
+			bottomPlane = strtof(argv[argc - 2], NULL);
+			topPlane = strtof(argv[argc - 3], NULL);
 
-	} else if (strcmp(nomb_proceso, "miniature") == 0) {
-	    int iters;
-	    float bottomPlane, topPlane;
-        iters = atoi(argv[argc - 1]);
-        bottomPlane = strtof(argv[argc - 2], NULL);
-        topPlane = strtof(argv[argc - 3], NULL);
-
-		aplicar_miniature(nombre_implementacion, nomb_arch_entrada,
-                    verbose, frames, carpeta_frames,
-                    topPlane, bottomPlane, iters);
-	} else if (strcmp(nomb_proceso, "original") == 0) {
-        aplicar_original(nomb_arch_entrada, verbose, frames,
-                         carpeta_frames);
-    }
-
+			aplicar_miniature(nombre_implementacion, nomb_arch_entrada,
+						verbose, frames, carpeta_frames,
+						topPlane, bottomPlane, iters);
+		} else if (strcmp(nomb_proceso, "original") == 0) {
+			aplicar_original(nomb_arch_entrada, verbose, frames,
+							carpeta_frames);
+		}
+		MEDIR_TIEMPO_STOP(end);
+		
+		if(tiempo){
+			imprimir_tiempos_ejecucion(start,end,100);
+			result = end-start;
+			fprintf(tiempo_txt,"%llu\n",result);
+		}
+		cant_iteraciones--;
+	}
+	
+	fclose(tiempo_txt);
 
 
 	return 0;

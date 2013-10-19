@@ -1,0 +1,37 @@
+Ej4
+
+Compilar el código en C con la opción -O1 significa que va a tratar de optimizar el código de manera que se ejecute más rápido; para lograr esto el tiempo de compilación va a aumentar ya que tiene que hacer más trabajo. En nuestro caso, el código es relativamente simple, por lo tanto el tiempo de compilación no tuvo grandes diferencias con la versión sin optimizaciones.
+
+Una de las principales diferencias entre el código no optimizado y el código compilado con -O1 es que se utiilizan más los registros de propósito general en vez de utilizar memoria para almacenar las variables locales. Como era de esperarse, eso trajo consigo una mayor performance a la hora de aplicar el filtro.
+
+También el código generado no respeta el orden de las instrucciones en el código C, por ejemplo:
+
+	red = red - rc_i;
+  5c:	8b 45 f0             	mov    -0x10(%rbp),%eax
+  5f:	29 45 e4             	sub    %eax,-0x1c(%rbp)
+	red = red*red;
+  62:	8b 45 e4             	mov    -0x1c(%rbp),%eax
+  65:	0f af 45 e4          	imul   -0x1c(%rbp),%eax
+  69:	89 45 e4             	mov    %eax,-0x1c(%rbp)
+  
+  
+  	red = red - rc_i;
+  15:	44 89 ce             	mov    %r9d,%esi
+  18:	29 fe                	sub    %edi,%esi
+  
+  ...Más operaciones de por medio...
+  
+  	red = red*red;
+  27:	0f af f6             	imul   %esi,%esi
+
+Sin embargo, el código optimizado aún no aprovecha todos los registros SSE a su disposición; sólo los utliza cuando tiene que calcular raíces cuadradas o realizar divisiones.
+
+Se observa también que la performance del filtro en C optimizado con -O1 trabaja casi tan rápido como el de assembler, esto se confirmará cuando se hagan los análisis de tiempo.
+
+El compilador ofrece otras opciones de optimización como:
+
+	-O2: El compilador optimiza aún más y busca conseguir tiempos de compilación y ejecución rápidos. Inlcuye todas las optimizaciones incluídas en -O1. El código puede volverse inestable si utiliza etiquetas "goto".
+	
+	-O3: Incluye las optimizaciones de -O2, y agrega más.
+	
+	-Ofast: Compila dejando de lado estándares de código(IEEE, ISO), pudiendo generar comportamientos inesperados si el código hacía uso de dichos estándares.

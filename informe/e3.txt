@@ -1,0 +1,7 @@
+Ej3
+
+Al comparar el código desensamblado de color_filter_c con el código desensamblado de color_filter_asm la principal diferencia que se encuentra es que el código generado por el ensamblador para color_filter_asm es muy similar al código fuente, mientras que no sucede de la misma manera con el código fuente en C.
+
+El código en C procesa cada cuadro del video de a un pixel por vez, mientras que el código en lenguaje ensamblador procesa de a 4. Además, el código de lenaguaje ensamblador utiliza mucho más los registros e instrucciones relacionadas a SSE, mientras que el código desensamblado de C los utiliza solamente para cálculos de punto flotante.
+
+En la implementación en C se utiliza bastante el recurso de variables locales y como se puede observar en el código desensamblado dichas variables locales se almacenan en el stack, y por cada operación que las involucrase se tiene que acceder a memoria; esto en lenguaje ensamblador no sucede, ya que se utilizan los registros de propósito general y los registros SSE, reduciendo considerablemente la cantidad de accesos a memoria y por ende mejorando la performance. Dicho esto, se puede observar que el código generado por la implementación en C podría optimizarse utilizando más registros de propósito general.

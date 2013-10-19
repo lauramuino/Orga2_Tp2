@@ -36,5 +36,11 @@ clean:
 	rm -f ./$(BIN)
 	rm -f $(BIN_DIR)/$(BIN)
 
+fcolorO1:
+	$(CC) -O1 $(CFLAGS) -c -o color_filter_c.o color_filter_c.c -lm
 
-
+fcolorO2:
+	$(CC) -O2 $(CFLAGS) -c -o color_filter_c.o color_filter_c.c -lm
+	
+fcolorO3:
+	$(CC) -O3 $(CFLAGS) -c -o color_filter_c.o color_filter_c.c -lm
