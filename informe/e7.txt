@@ -1,0 +1,27 @@
+La técnica de desenrollado de ciclos ("loop unrolling") es un método para optimizar la ejecución de código, logrando un tiempo más corto. Sin embargo, esta optimización no viene sin costos: aumenta el tamaño de código fuente y de código ejecutable y hay situaciones en las cuales esto no es deseable. Si uno dispone de espacio de almacenamiento de código entonces no trae mayores consecuencias.
+
+Para ello, la técnica de "loop unrolling" se encarga de reducir la cantidad de iteraciones de los ciclos dentro del código y asimismo reducir la cantidad de evaluaciones y saltos condicionales durante la ejecución del programa. Esto se puede lograr reemplazando el contenido de los ciclos por más de una iteración en una.
+
+Considere el siguiente pseudocódigo hecho en C:
+
+for(i = 0; i < 100,++i){
+	hacerAccion(i)
+}
+
+Se puede observar que el código hace 100 iteraciones de hacerAcción, teniendo que aumentar el contador para luego evaluar si se cumplió la condición de salida.
+
+Si se aplica la técnica de "loop unrolling", el código queda de la siguiente forma:
+
+for(i = 0; i < 100,i+=5){
+	hacerAccion(i)
+	hacerAccion(i+1)
+	hacerAccion(i+2)
+	hacerAccion(i+3)
+	hacerAccion(i+4)
+}
+
+El código resultante hace 20 iteraciones en vez de 100, y la condición de salida es evaluada 20 veces.
+
+Sin embargo está técnica no puede ser aplicada siempre; hay casos donde la condición de salida involucra otras variables.
+
+En nuestro caso se propone reducir cada ciclo original que procesaba de a 12 píxeles con uno que procesa de a 48 píxeles. Con esto la cantidad total de iteraciones es un 25% de la cantidad de iteraciones original.

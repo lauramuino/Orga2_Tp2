@@ -44,3 +44,12 @@ fcolorO2:
 	
 fcolorO3:
 	$(CC) -O3 $(CFLAGS) -c -o color_filter_c.o color_filter_c.c -lm
+	
+fcolorNoJump:
+	$(CC) -O1 $(CFLAGS) -c -o color_filter_c.o color_filter_c_NoJump.c -lm
+
+fcolorLU:
+	$(ASM) $(ASMFLAGS) -o color_filter_asm.o color_filter_asmLU.asm
+	
+decodeSP:
+	$(ASM) $(ASMFLAGS) -o decode_asm.o decode_asmSP.asm

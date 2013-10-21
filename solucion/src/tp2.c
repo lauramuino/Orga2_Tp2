@@ -163,18 +163,17 @@ int main( int argc, char** argv ) {
         }
 	}
 	unsigned long long int start, end, result;
-	int its = cant_iteraciones;
 	FILE* tiempo_txt;
 	if(tiempo){
 		char tiempo_filename[255];
-		sprintf(tiempo_filename,"%s.tiempos.%s.txt",nomb_proceso,nombre_implementacion);
+		sprintf(tiempo_filename,"../timetests/%s.tiempos.%s.txt",nomb_proceso,nombre_implementacion);
 		tiempo_txt = fopen(tiempo_filename,"w");
 	}
 	
 	while(cant_iteraciones > 0){
+		printf("Iteraciones restantes: %d\n",cant_iteraciones);
 		start = 0;
 		end = 0;
-		MEDIR_TIEMPO_START(start);
 		// Imprimo info
 		printf ( "Procesando...\n");
 		printf ( "  Filtro             : %s\n", nomb_proceso);
@@ -188,40 +187,45 @@ int main( int argc, char** argv ) {
 			bc = atoi(argv[argc - 2]);
 			gc = atoi(argv[argc - 3]);
 			rc = atoi(argv[argc - 4]);
+			MEDIR_TIEMPO_START(start);
 			aplicar_filtro_color(nombre_implementacion, nomb_arch_entrada,
 								verbose, frames, carpeta_frames,
 								rc, gc, bc, threshold);
+			MEDIR_TIEMPO_STOP(end);
 		} else if (strcmp(nomb_proceso, "decode") == 0) {
-
+			MEDIR_TIEMPO_START(start);
 			aplicar_decode(nombre_implementacion, nomb_arch_entrada,
 							verbose);
+			MEDIR_TIEMPO_STOP(end);
+			
 		
 
 		} else if (strcmp(nomb_proceso, "miniature") == 0) {
+			
 			int iters;
 			float bottomPlane, topPlane;
 			iters = atoi(argv[argc - 1]);
 			bottomPlane = strtof(argv[argc - 2], NULL);
 			topPlane = strtof(argv[argc - 3], NULL);
-
+			MEDIR_TIEMPO_START(start);
 			aplicar_miniature(nombre_implementacion, nomb_arch_entrada,
 						verbose, frames, carpeta_frames,
 						topPlane, bottomPlane, iters);
+			MEDIR_TIEMPO_STOP(end);
 		} else if (strcmp(nomb_proceso, "original") == 0) {
 			aplicar_original(nomb_arch_entrada, verbose, frames,
 							carpeta_frames);
 		}
-		MEDIR_TIEMPO_STOP(end);
 		
 		if(tiempo){
-			imprimir_tiempos_ejecucion(start,end,100);
+			//imprimir_tiempos_ejecucion(start,end,100);
 			result = end-start;
 			fprintf(tiempo_txt,"%llu\n",result);
 		}
 		cant_iteraciones--;
 	}
 	
-	fclose(tiempo_txt);
+	if(tiempo) fclose(tiempo_txt);
 
 
 	return 0;

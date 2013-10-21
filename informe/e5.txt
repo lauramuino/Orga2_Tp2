@@ -1,0 +1,12 @@
+Se corrió el filtro con los siguientes parámetros:
+
+(rc, gc, bc) = (20, 20, 200)
+threshold = 126
+
+Nota: Son los mismos parámetros que uno de los tests de la cátedra.
+
+Para obtener una medición promedio se hicieron 200 pasadas de aplicar el filtro a todo el video, y se tomó la cantidad de ciclos de clock utilizando la instrucción rdtsc de ASM y así conseguir un número muy preciso de ciclos de clock.
+
+A continuación se hace un gráfico comparando todos los resultados obtenidos.
+
+//Calcular esperanza y desvio estándar o varianza para ilustrar la presencia de outliers... también se puede suprimir el valor más alto y el más bajo para reducir su influencia en el promedio.

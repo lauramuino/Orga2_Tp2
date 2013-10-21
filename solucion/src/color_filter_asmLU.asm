@@ -108,13 +108,12 @@ color_filter_asm:
 	pxor XMM0, XMM0 ;Vacio XMM0
 	pxor XMM1, XMM1
 	pxor XMM2, XMM2
-	cmp R14, 12 ;Si es un caso borde
-	jne .no_borde
-	sub RDI, 4 ;Retrocedo el cursor
-	;sub RSI, 4
-	movdqu XMM0, [RDI]
-	psrldq XMM0, 4
-	jmp .continuo ;Proceso como siempre
+	;cmp R14, 12 ;Si es un caso borde
+	;jne .no_borde
+	;sub RDI, 4 ;Retrocedo el cursor
+	;movdqu XMM0, [RDI]
+	;psrldq XMM0, 4
+	;jmp .continuo ;Proceso como siempre
 .no_borde:
 	movdqu XMM0, [RDI]
 .continuo:
@@ -328,8 +327,394 @@ color_filter_asm:
 	add RSI, 12
 	add RDI, 12
 	sub R14, 12
+;////////////Nuevo ciclo/////////
+	pxor XMM0, XMM0
+	pxor XMM1, XMM1
+	pxor XMM2, XMM2
+	;cmp R14, 12
+	;jne .no_borde2
+	;sub RDI, 4
+	;movdqu XMM0, [RDI]
+	;psrldq XMM0, 4
+	;jmp .continuo2
+.no_borde2:
+	movdqu XMM0, [RDI]
+.continuo2:
+	movdqu XMM1, XMM0
+	movdqu XMM2, XMM0
+	pxor XMM15, XMM15
+	punpcklbw XMM1, XMM15
+	pslldq XMM2, 2
+	punpckhbw XMM2, XMM15
+	movdqu XMM3, XMM1
+	movdqu XMM4, XMM2
+	movdqu XMM14, [mask_gris]
+	movdqu XMM5, XMM3
+	psrldq XMM5, 2
+	paddw XMM3, XMM5
+	psrldq XMM5, 2
+	paddw XMM3, XMM5
+	punpcklwd XMM3, XMM15
+	pand XMM3, XMM14
+	movdqu XMM5, XMM3
+	psrldq XMM5, 8
+	paddd XMM3, XMM5
+	movdqu XMM5, XMM4
+	psrldq XMM5, 2
+	paddw XMM4, XMM5
+	psrldq XMM5, 2
+	paddw XMM4, XMM5
+	punpcklwd XMM4, XMM15
+	pand XMM4, XMM14
+	movdqu XMM5, XMM4
+	psrldq XMM5, 8
+	paddd XMM4, XMM5
+	cvtdq2pd XMM3, XMM3
+	cvtdq2pd XMM4, XMM4
+	mulpd XMM3, [un_tercio]
+	mulpd XMM4, [un_tercio]
+	cvtpd2dq XMM3, XMM3
+	cvtpd2dq XMM4, XMM4
+	pslldq XMM4, 8
+	paddd XMM3, XMM4 
+	packssdw XMM3, XMM3
+	packuswb XMM3, XMM3
+	pshufb XMM3, [mask_broadcast]
+	movdqu XMM11, XMM3
+	movdqu XMM14, [color_deseado]
+	psubw XMM1, XMM14
+	psubw XMM2, XMM14
+	pmullw XMM1, XMM1 
+	pmullw XMM2, XMM2 
+	movdqu XMM3, XMM1
+	movdqu XMM4, XMM2
+	punpcklwd XMM1, XMM15
+	psrldq XMM3, 6
+	punpcklwd XMM3, XMM15
+	punpcklwd XMM2, XMM15
+	psrldq XMM4, 6
+	punpcklwd XMM4, XMM15
+	movdqu XMM5, XMM1
+	psrldq XMM5, 4
+	paddd XMM1, XMM5
+	psrldq XMM5, 4
+	paddd XMM1, XMM5
+	cvtdq2pd XMM1, XMM1
+	movdqu XMM5, XMM3
+	psrldq XMM5, 4
+	paddd XMM3, XMM5
+	psrldq XMM5, 4
+	paddd XMM3, XMM5
+	cvtdq2pd XMM3, XMM3
+	movdqu XMM5, XMM2
+	psrldq XMM5, 4
+	paddd XMM2, XMM5
+	psrldq XMM5, 4
+	paddd XMM2, XMM5
+	cvtdq2pd XMM2, XMM2
+	movdqu XMM5, XMM4
+	psrldq XMM5, 4
+	paddd XMM4, XMM5
+	psrldq XMM5, 4
+	paddd XMM4, XMM5
+	cvtdq2pd XMM4, XMM4
+	shufpd XMM1, XMM3, 0
+	shufpd XMM2, XMM4, 0
+	sqrtpd XMM1, XMM1 
+	sqrtpd XMM2, XMM2
+	xor RAX, RAX 
+	stmxcsr dword [RSP + 8] 
+	stmxcsr dword [RSP + 16] 
+	mov EAX, [RSP+8] 
+	or EAX, 0x00004000 
+	mov [RSP+8], EAX
+	ldmxcsr dword [RSP+8]
+	cvtpd2dq XMM1, XMM1
+	cvtpd2dq XMM2, XMM2
+	ldmxcsr dword [RSP+16]
+	pslldq XMM2, 8
+	paddd XMM1, XMM2 
+	pxor XMM2, XMM2 
+	movdqu XMM2, XMM1
+	xor RBX, RBX
+	xor RAX, RAX
+	mov EBX, R9D
+	mov EAX, R9D
+	shl RAX, 32
+	add RBX, RAX
+	movq XMM13, RBX 
+	movdqu XMM12, XMM13
+	pslldq XMM12, 8
+	paddd XMM13, XMM12 
+	pcmpgtd XMM2, XMM13 
+	pshufb XMM2, [mask_comp]
+	pand XMM2, [solo_4_bytes]
+	pand XMM11, XMM2 
+	pandn XMM2, XMM0 
+	paddb XMM2, XMM11
+	movdqu [RSI], XMM2
+	add RSI, 12
+	add RDI, 12
+	sub R14, 12
+;//////////////Nuevo ciclo////////////
+	pxor XMM0, XMM0
+	pxor XMM1, XMM1
+	pxor XMM2, XMM2
+	;cmp R14, 12
+	;jne .no_borde3
+	;sub RDI, 4
+	;movdqu XMM0, [RDI]
+	;psrldq XMM0, 4
+	;jmp .continuo3
+.no_borde3:
+	movdqu XMM0, [RDI]
+.continuo3:
+	movdqu XMM1, XMM0
+	movdqu XMM2, XMM0
+	pxor XMM15, XMM15
+	punpcklbw XMM1, XMM15
+	pslldq XMM2, 2
+	punpckhbw XMM2, XMM15
+	movdqu XMM3, XMM1
+	movdqu XMM4, XMM2
+	movdqu XMM14, [mask_gris]
+	movdqu XMM5, XMM3
+	psrldq XMM5, 2
+	paddw XMM3, XMM5
+	psrldq XMM5, 2
+	paddw XMM3, XMM5
+	punpcklwd XMM3, XMM15
+	pand XMM3, XMM14
+	movdqu XMM5, XMM3
+	psrldq XMM5, 8
+	paddd XMM3, XMM5
+	movdqu XMM5, XMM4
+	psrldq XMM5, 2
+	paddw XMM4, XMM5
+	psrldq XMM5, 2
+	paddw XMM4, XMM5
+	punpcklwd XMM4, XMM15
+	pand XMM4, XMM14
+	movdqu XMM5, XMM4
+	psrldq XMM5, 8
+	paddd XMM4, XMM5
+	cvtdq2pd XMM3, XMM3
+	cvtdq2pd XMM4, XMM4
+	mulpd XMM3, [un_tercio]
+	mulpd XMM4, [un_tercio]
+	cvtpd2dq XMM3, XMM3
+	cvtpd2dq XMM4, XMM4
+	pslldq XMM4, 8
+	paddd XMM3, XMM4 
+	packssdw XMM3, XMM3
+	packuswb XMM3, XMM3
+	pshufb XMM3, [mask_broadcast]
+	movdqu XMM11, XMM3
+	movdqu XMM14, [color_deseado]
+	psubw XMM1, XMM14
+	psubw XMM2, XMM14
+	pmullw XMM1, XMM1 
+	pmullw XMM2, XMM2 
+	movdqu XMM3, XMM1
+	movdqu XMM4, XMM2
+	punpcklwd XMM1, XMM15
+	psrldq XMM3, 6
+	punpcklwd XMM3, XMM15
+	punpcklwd XMM2, XMM15
+	psrldq XMM4, 6
+	punpcklwd XMM4, XMM15
+	movdqu XMM5, XMM1
+	psrldq XMM5, 4
+	paddd XMM1, XMM5
+	psrldq XMM5, 4
+	paddd XMM1, XMM5
+	cvtdq2pd XMM1, XMM1
+	movdqu XMM5, XMM3
+	psrldq XMM5, 4
+	paddd XMM3, XMM5
+	psrldq XMM5, 4
+	paddd XMM3, XMM5
+	cvtdq2pd XMM3, XMM3
+	movdqu XMM5, XMM2
+	psrldq XMM5, 4
+	paddd XMM2, XMM5
+	psrldq XMM5, 4
+	paddd XMM2, XMM5
+	cvtdq2pd XMM2, XMM2
+	movdqu XMM5, XMM4
+	psrldq XMM5, 4
+	paddd XMM4, XMM5
+	psrldq XMM5, 4
+	paddd XMM4, XMM5
+	cvtdq2pd XMM4, XMM4
+	shufpd XMM1, XMM3, 0
+	shufpd XMM2, XMM4, 0
+	sqrtpd XMM1, XMM1 
+	sqrtpd XMM2, XMM2
+	xor RAX, RAX 
+	stmxcsr dword [RSP + 8] 
+	stmxcsr dword [RSP + 16] 
+	mov EAX, [RSP+8] 
+	or EAX, 0x00004000 
+	mov [RSP+8], EAX
+	ldmxcsr dword [RSP+8]
+	cvtpd2dq XMM1, XMM1
+	cvtpd2dq XMM2, XMM2
+	ldmxcsr dword [RSP+16]
+	pslldq XMM2, 8
+	paddd XMM1, XMM2 
+	pxor XMM2, XMM2 
+	movdqu XMM2, XMM1
+	xor RBX, RBX
+	xor RAX, RAX
+	mov EBX, R9D
+	mov EAX, R9D
+	shl RAX, 32
+	add RBX, RAX
+	movq XMM13, RBX 
+	movdqu XMM12, XMM13
+	pslldq XMM12, 8
+	paddd XMM13, XMM12 
+	pcmpgtd XMM2, XMM13 
+	pshufb XMM2, [mask_comp]
+	pand XMM2, [solo_4_bytes]
+	pand XMM11, XMM2 
+	pandn XMM2, XMM0 
+	paddb XMM2, XMM11
+	movdqu [RSI], XMM2
+	add RSI, 12
+	add RDI, 12
+	sub R14, 12
+;//////////////Nuevo ciclo////////////
+	pxor XMM0, XMM0
+	pxor XMM1, XMM1
+	pxor XMM2, XMM2
+	cmp R14, 12
+	jne .no_borde4
+	sub RDI, 4
+	movdqu XMM0, [RDI]
+	psrldq XMM0, 4
+	jmp .continuo4
+.no_borde4:
+	movdqu XMM0, [RDI]
+.continuo4:
+	movdqu XMM1, XMM0
+	movdqu XMM2, XMM0
+	pxor XMM15, XMM15
+	punpcklbw XMM1, XMM15
+	pslldq XMM2, 2
+	punpckhbw XMM2, XMM15
+	movdqu XMM3, XMM1
+	movdqu XMM4, XMM2
+	movdqu XMM14, [mask_gris]
+	movdqu XMM5, XMM3
+	psrldq XMM5, 2
+	paddw XMM3, XMM5
+	psrldq XMM5, 2
+	paddw XMM3, XMM5
+	punpcklwd XMM3, XMM15
+	pand XMM3, XMM14
+	movdqu XMM5, XMM3
+	psrldq XMM5, 8
+	paddd XMM3, XMM5
+	movdqu XMM5, XMM4
+	psrldq XMM5, 2
+	paddw XMM4, XMM5
+	psrldq XMM5, 2
+	paddw XMM4, XMM5
+	punpcklwd XMM4, XMM15
+	pand XMM4, XMM14
+	movdqu XMM5, XMM4
+	psrldq XMM5, 8
+	paddd XMM4, XMM5
+	cvtdq2pd XMM3, XMM3
+	cvtdq2pd XMM4, XMM4
+	mulpd XMM3, [un_tercio]
+	mulpd XMM4, [un_tercio]
+	cvtpd2dq XMM3, XMM3
+	cvtpd2dq XMM4, XMM4
+	pslldq XMM4, 8
+	paddd XMM3, XMM4 
+	packssdw XMM3, XMM3
+	packuswb XMM3, XMM3
+	pshufb XMM3, [mask_broadcast]
+	movdqu XMM11, XMM3
+	movdqu XMM14, [color_deseado]
+	psubw XMM1, XMM14
+	psubw XMM2, XMM14
+	pmullw XMM1, XMM1 
+	pmullw XMM2, XMM2 
+	movdqu XMM3, XMM1
+	movdqu XMM4, XMM2
+	punpcklwd XMM1, XMM15
+	psrldq XMM3, 6
+	punpcklwd XMM3, XMM15
+	punpcklwd XMM2, XMM15
+	psrldq XMM4, 6
+	punpcklwd XMM4, XMM15
+	movdqu XMM5, XMM1
+	psrldq XMM5, 4
+	paddd XMM1, XMM5
+	psrldq XMM5, 4
+	paddd XMM1, XMM5
+	cvtdq2pd XMM1, XMM1
+	movdqu XMM5, XMM3
+	psrldq XMM5, 4
+	paddd XMM3, XMM5
+	psrldq XMM5, 4
+	paddd XMM3, XMM5
+	cvtdq2pd XMM3, XMM3
+	movdqu XMM5, XMM2
+	psrldq XMM5, 4
+	paddd XMM2, XMM5
+	psrldq XMM5, 4
+	paddd XMM2, XMM5
+	cvtdq2pd XMM2, XMM2
+	movdqu XMM5, XMM4
+	psrldq XMM5, 4
+	paddd XMM4, XMM5
+	psrldq XMM5, 4
+	paddd XMM4, XMM5
+	cvtdq2pd XMM4, XMM4
+	shufpd XMM1, XMM3, 0
+	shufpd XMM2, XMM4, 0
+	sqrtpd XMM1, XMM1 
+	sqrtpd XMM2, XMM2
+	xor RAX, RAX 
+	stmxcsr dword [RSP + 8] 
+	stmxcsr dword [RSP + 16] 
+	mov EAX, [RSP+8] 
+	or EAX, 0x00004000 
+	mov [RSP+8], EAX
+	ldmxcsr dword [RSP+8]
+	cvtpd2dq XMM1, XMM1
+	cvtpd2dq XMM2, XMM2
+	ldmxcsr dword [RSP+16]
+	pslldq XMM2, 8
+	paddd XMM1, XMM2 
+	pxor XMM2, XMM2 
+	movdqu XMM2, XMM1
+	xor RBX, RBX
+	xor RAX, RAX
+	mov EBX, R9D
+	mov EAX, R9D
+	shl RAX, 32
+	add RBX, RAX
+	movq XMM13, RBX 
+	movdqu XMM12, XMM13
+	pslldq XMM12, 8
+	paddd XMM13, XMM12 
+	pcmpgtd XMM2, XMM13 
+	pshufb XMM2, [mask_comp]
+	pand XMM2, [solo_4_bytes]
+	pand XMM11, XMM2 
+	pandn XMM2, XMM0 
+	paddb XMM2, XMM11
+	movdqu [RSI], XMM2
+	add RSI, 12
+	add RDI, 12
+	sub R14, 12
 	jmp .inicio 
-
 .fin:
 	add RSP, 32
 	pop R14
