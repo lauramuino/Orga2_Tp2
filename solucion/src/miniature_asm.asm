@@ -20,6 +20,8 @@ mask_btow_r:		db 0x02,0xff,0x05,0xff,0x08,0xff,0x0b
 restar_top: 		dd 0x00
 restar_bot:			dd 0x00
 
+seiscientos:		dd 600
+
 section .text
 
 ; void miniature_asm(unsigned char *src,
@@ -29,6 +31,7 @@ section .text
 ;                float topPlane,
 ;                float bottomPlane,
 ;                int iters);
+
 
 miniature_asm:
 	push RBP
@@ -56,12 +59,39 @@ miniature_asm:
 	xor R13d, R13d				;R13d = filas_bot		
 	xor RDI, RDI
 	xor RSI, RSI
+.hola:
+;Copiar primero..
+	xor rdi, rdi
+	pxor xmm2, xmm2
+	pxor xmm3, xmm3
+	movd xmm2, edx
+	movd xmm3, ecx
+	CVTDQ2PS xmm3, xmm3
+	CVTDQ2PS xmm2, xmm2
+	mulps xmm3, xmm2		;xmm3 = 0|0|0|height*width(float)
+	cvtss2si edi, xmm3
+	mov esi, edi
+	add edi, edi
+	add edi, esi			;edi = height*width*3
+	sub edi, 16
+	mov esi, 0
+	
+.copiar_primero:
+	movdqu xmm2, [r14 + rsi]
+	movdqu [r15 + rsi], xmm2
+	add esi, 16
+	cmp esi, edi
+	jg .salir_copiar_primero
+	jmp .copiar_primero
+.salir_copiar_primero
+
+
 
 
 ;filas_top = height*topPlane 
 ;filas_bot = height - bottomPlane*height
 ;---------------------------------------
-.hola:
+
 	xor r11, r11
 	shl rcx, 32
 	shr rcx, 32
@@ -93,18 +123,15 @@ xor rsi, rsi
 pxor xmm0, xmm0
 pxor xmm1, xmm1
 pxor xmm2, xmm2
-;movd xmm0, r13d 
 cvtsi2sd xmm0, r13d
 cvtsi2sd xmm1, r12d
 cvtsi2sd xmm2, r8d
-mulsd xmm0, xmm2
-mulsd xmm1, xmm2
-cvtsd2si rdi, xmm0
-cvtsd2si rsi, xmm1
-mov [restar_bot], rdi
-mov [restar_top], rsi
-
-
+divsd xmm0, xmm2
+divsd xmm1, xmm2
+cvtsd2si edi, xmm0
+cvtsd2si esi, xmm1
+mov [restar_bot], edi
+mov [restar_top], esi
 
 .iteraciones:
 ;indice_actual_top = width*2 +2;
@@ -120,14 +147,14 @@ mov [restar_top], rsi
 	add r11d, r10d				;r11d = indice_actual_top
 
 	movd xmm0, edx
-	movd xmm1, r13d
+	movd xmm1, r12d
 	CVTDQ2PS xmm0, xmm0
 	CVTDQ2PS xmm1, xmm1			;convertir a floats 32b
 
 	mulss xmm0, xmm1			;xmm0 = basura | basura | basura | filas_top*width
 	cvtss2si r10d, xmm0			;r10d = filas_top*width dword
 	;movd r10d, xmm0			
-	sub r10d, 1					;r10d = filas_top*width - 1
+	sub r10d, 3				;r10d = filas_top*width - 1
 	mov edi, r10d
 	add r10d, r10d
 	add r10d, edi				;r10d = indice_fin_top
@@ -135,11 +162,21 @@ mov [restar_top], rsi
 	push r12
 	push r13
 
+
 ;<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< IT TOP >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 .iteraciones_top:
-	mov edi, ecx
-	add edi, ecx
-	add edi, ecx		;edi = width*3
+;agregado para probar:
+	cmp r11d, 353817
+	je .aca
+	jmp .no_aca
+.aca:
+	cmp r11, r11
+.no_aca:
+;hasta aca agregado..
+
+	mov edi, edx
+	add edi, edx
+	add edi, edx		;edi = width*3
 
 	xor r13, r13
 	mov r13d, r11d
@@ -176,7 +213,7 @@ mov [restar_top], rsi
 ;--------------------AZULES---------------------
 ;---------------------xmm0----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm0
+	movdqu xmm5, xmm0
 	pshufb xmm5, [mask_btow_b]		;xmm5 = 0 0 0 0 0 0 0 b4 0 b3 0 b2 0 b1 0 b0
 
  	movdqu xmm6, xmm5
@@ -196,7 +233,7 @@ mov [restar_top], rsi
 	;Repito lo mismo para las otras 4 lineas de pixeles, para azul:
 ;---------------------xmm1----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm1
+	movdqu xmm5, xmm1
 	pshufb xmm5, [mask_btow_b]		
 
  	movdqu xmm6, xmm5
@@ -214,7 +251,7 @@ mov [restar_top], rsi
 	addps xmm10, xmm7
 ;---------------------xmm2----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm2
+	movdqu xmm5, xmm2
 	pshufb xmm5, [mask_btow_b]		
 
  	movdqu xmm6, xmm5
@@ -232,7 +269,7 @@ mov [restar_top], rsi
 	addps xmm10, xmm7
 ;---------------------xmm3----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm3
+	movdqu xmm5, xmm3
 	pshufb xmm5, [mask_btow_b]		
 
  	movdqu xmm6, xmm5
@@ -250,7 +287,7 @@ mov [restar_top], rsi
 	addps xmm10, xmm7
 ;---------------------xmm4----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm4
+	movdqu xmm5, xmm4
 	pshufb xmm5, [mask_btow_b]		
 
  	movdqu xmm6, xmm5
@@ -266,6 +303,7 @@ mov [restar_top], rsi
 
 	addps xmm10, xmm5	
 	addps xmm10, xmm7
+	
 ;------------------fin azules-------------------
 	xor rax, rax
 	;esi  suma de todas las parciales
@@ -274,15 +312,12 @@ mov [restar_top], rsi
 	pxor xmm12, xmm12					;xmm10 = 1 | 2 | 3 | 4
 	haddps xmm10, xmm12					;xmm10 = 0 | 0| 1+2 | 3+4 
 	haddps xmm10, xmm12					;xmm10 = 0 | 0 | 0 | 1+2+3+4
-	
-	mov edi, 600
-	movd xmm11, edi
+
+	movd xmm11, [seiscientos]
 	cvtdq2ps xmm11, xmm11
 	divss xmm10, xmm11
-	cvtss2si eax, xmm12	;convierte single-float_point a dword int y guarda en esi
-	mov [r15 +r13], al
-
-
+	cvttss2si eax, xmm10	;convierte single-float_point a dword int y guarda en esi
+	mov [r15 +r11], al
 
 
 
@@ -295,7 +330,7 @@ mov [restar_top], rsi
 ;--------------------VERDES---------------------
 ;---------------------xmm0----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm0
+	movdqu xmm5, xmm0
 	pshufb xmm5, [mask_btow_g]
 
  	movdqu xmm6, xmm5
@@ -313,7 +348,7 @@ mov [restar_top], rsi
 	addps xmm10, xmm7
 ;---------------------xmm1----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm1
+	movdqu xmm5, xmm1
 	pshufb xmm5, [mask_btow_g]
 
  	movdqu xmm6, xmm5
@@ -331,7 +366,7 @@ mov [restar_top], rsi
 	addps xmm10, xmm7
 ;---------------------xmm2----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm2
+	movdqu xmm5, xmm2
 	pshufb xmm5, [mask_btow_g]
 
  	movdqu xmm6, xmm5
@@ -349,8 +384,8 @@ mov [restar_top], rsi
 	addps xmm10, xmm7
 ;---------------------xmm3----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm3
-	pshufb xmm5, [mask_btow_r]
+	movdqu xmm5, xmm3
+	pshufb xmm5, [mask_btow_g]
 
  	movdqu xmm6, xmm5
 	pmullw xmm5, [md1] 
@@ -367,8 +402,8 @@ mov [restar_top], rsi
 	addps xmm10, xmm7
 ;---------------------xmm4----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm4
-	pshufb xmm5, [mask_btow_r]
+	movdqu xmm5, xmm4
+	pshufb xmm5, [mask_btow_g]
 
  	movdqu xmm6, xmm5
 	pmullw xmm5, [md2] 
@@ -390,11 +425,10 @@ mov [restar_top], rsi
 	haddps xmm10, xmm12					;xmm10 = 0 | 0| 1+2 | 3+4
 	haddps xmm10, xmm12					;xmm10 = 0 | 0 | 0 | 1+2+3+4
 	
-	mov edi, 600
-	movd xmm11, edi
+	movd xmm11, [seiscientos]
 	cvtdq2ps xmm11, xmm11
 	divss xmm10, xmm11
-	cvtss2si eax, xmm12	;convierte single-float_point a dword int y guarda en esi
+	cvttss2si eax, xmm10	;convierte single-float_point a dword int y guarda en esi
 	mov [r15+r11], al
 
 	add r11d, 1
@@ -404,7 +438,7 @@ mov [restar_top], rsi
 ;--------------------ROJOS----------------------
 ;---------------------xmm0----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm0
+	movdqu xmm5, xmm0
 	pshufb xmm5, [mask_btow_r]
 
  	movdqu xmm6, xmm5
@@ -422,7 +456,7 @@ mov [restar_top], rsi
 	addps xmm10, xmm7
 ;---------------------xmm1----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm1
+	movdqu xmm5, xmm1
 	pshufb xmm5, [mask_btow_r]
 
  	movdqu xmm6, xmm5
@@ -440,7 +474,7 @@ mov [restar_top], rsi
 	addps xmm10, xmm7
 ;---------------------xmm2----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm2
+	movdqu xmm5, xmm2
 	pshufb xmm5, [mask_btow_r]
 
  	movdqu xmm6, xmm5
@@ -458,7 +492,7 @@ mov [restar_top], rsi
 	addps xmm10, xmm7
 ;---------------------xmm3----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm3
+	movdqu xmm5, xmm3
 	pshufb xmm5, [mask_btow_r]
 
  	movdqu xmm6, xmm5
@@ -476,7 +510,7 @@ mov [restar_top], rsi
 	addps xmm10, xmm7
 ;---------------------xmm4----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm4
+	movdqu xmm5, xmm4
 	pshufb xmm5, [mask_btow_r]
 
  	movdqu xmm6, xmm5
@@ -499,23 +533,23 @@ mov [restar_top], rsi
 	haddps xmm10, xmm12					;xmm10 = 0 | 0| 1+2 | 3+4
 	haddps xmm10, xmm12					;xmm10 = 0 | 0 | 0 | 1+2+3+4
 	
-	mov edi, 600
-	movd xmm11, edi
+	movd xmm11, [seiscientos]
 	cvtdq2ps xmm11, xmm11
 	divss xmm10, xmm11
-	cvtss2si eax, xmm12	;convierte single-float_point a dword int y guarda en esi
+	cvttss2si eax, xmm10	;convierte single-float_point a dword int y guarda en esi
 	mov [r15+r11], al
 
 ;YA SE CAMBIO EL PIXEL ACTUAL..
 
 	add r11d, 1
 	cmp r11d, r10d
-	je .fin_iteraciones_top
+	jg .fin_iteraciones_top
 	jmp .iteraciones_top
 
 .fin_iteraciones_top:
 	pop r13
 	pop r12
+	
 
 ;indice_actual_bot = ( height - filas_bot )*width*3;
 ;indice_final_bot = (  (height*width) - (width*2) - 3  )*3;
@@ -546,6 +580,7 @@ mov [restar_top], rsi
 	mulss xmm0, xmm1			;xmm0 = basura | basura | basura | ( height - filas_bot )*width
 	cvtps2dq xmm0, xmm0
 	movd r11d, xmm0
+	add r11d, 2
 	mov edi, r11d
 	add r11d, r11d
 	add r11d, edi				;r11d = ( height - filas_bot )*width*3 = indice_actual_bot
@@ -554,14 +589,15 @@ mov [restar_top], rsi
 	push r12
 	push r13
 
+
 ;<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< IT BOT >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 .iteraciones_bot:
 ;-------------carga-------------
 	xor rdi, rdi
 
-	mov edi, ecx
-	add edi, ecx
-	add edi, ecx		;edi = width*3
+	mov edi, edx
+	add edi, edx
+	add edi, edx		;edi = width*3
 
 	xor r13, r13
 	mov r13d, r11d
@@ -602,11 +638,10 @@ mov [restar_top], rsi
 
 	pxor xmm10, xmm10
 	pxor xmm11, xmm11
-
 ;--------------------AZULES---------------------
 ;---------------------xmm0----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm0
+	movdqu xmm5, xmm0
 	pshufb xmm5, [mask_btow_b]		;xmm5 = 0 0 0 0 0 0 0 b4 0 b3 0 b2 0 b1 0 b0
 
  	movdqu xmm6, xmm5
@@ -626,7 +661,7 @@ mov [restar_top], rsi
 	;Repito lo mismo para las otras 4 lineas de pixeles, para azul:
 ;---------------------xmm1----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm1
+	movdqu xmm5, xmm1
 	pshufb xmm5, [mask_btow_b]		
 
  	movdqu xmm6, xmm5
@@ -644,7 +679,7 @@ mov [restar_top], rsi
 	addps xmm10, xmm7
 ;---------------------xmm2----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm2
+	movdqu xmm5, xmm2
 	pshufb xmm5, [mask_btow_b]		
 
  	movdqu xmm6, xmm5
@@ -662,7 +697,7 @@ mov [restar_top], rsi
 	addps xmm10, xmm7
 ;---------------------xmm3----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm3
+	movdqu xmm5, xmm3
 	pshufb xmm5, [mask_btow_b]		
 
  	movdqu xmm6, xmm5
@@ -680,7 +715,7 @@ mov [restar_top], rsi
 	addps xmm10, xmm7
 ;---------------------xmm4----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm4
+	movdqu xmm5, xmm4
 	pshufb xmm5, [mask_btow_b]		
 
  	movdqu xmm6, xmm5
@@ -703,11 +738,10 @@ mov [restar_top], rsi
 	haddps xmm10, xmm12					;xmm10 = 0 | 0| 1+2 | 3+4
 	haddps xmm10, xmm12					;xmm10 = 0 | 0 | 0 | 1+2+3+4
 	
-	mov edi, 600
-	movd xmm11, edi
+	movd xmm11, [seiscientos]
 	cvtdq2ps xmm11, xmm11
 	divss xmm10, xmm11
-	cvtss2si eax, xmm12	;convierte single-float_point a dword int y guarda en esi
+	cvttss2si eax, xmm10	;convierte single-float_point a dword int y guarda en esi
 	mov [r15+r11], al
 
 
@@ -720,7 +754,7 @@ mov [restar_top], rsi
 ;--------------------VERDES---------------------
 ;---------------------xmm0----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm0
+	movdqu xmm5, xmm0
 	pshufb xmm5, [mask_btow_g]
 
  	movdqu xmm6, xmm5
@@ -738,7 +772,7 @@ mov [restar_top], rsi
 	addps xmm10, xmm7
 ;---------------------xmm1----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm1
+	movdqu xmm5, xmm1
 	pshufb xmm5, [mask_btow_g]
 
  	movdqu xmm6, xmm5
@@ -756,7 +790,7 @@ mov [restar_top], rsi
 	addps xmm10, xmm7
 ;---------------------xmm2----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm2
+	movdqu xmm5, xmm2
 	pshufb xmm5, [mask_btow_g]
 
  	movdqu xmm6, xmm5
@@ -774,8 +808,8 @@ mov [restar_top], rsi
 	addps xmm10, xmm7
 ;---------------------xmm3----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm3
-	pshufb xmm5, [mask_btow_r]
+	movdqu xmm5, xmm3
+	pshufb xmm5, [mask_btow_g]
 
  	movdqu xmm6, xmm5
 	pmullw xmm5, [md1] 
@@ -792,8 +826,8 @@ mov [restar_top], rsi
 	addps xmm10, xmm7
 ;---------------------xmm4----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm4
-	pshufb xmm5, [mask_btow_r]
+	movdqu xmm5, xmm4
+	pshufb xmm5, [mask_btow_g]
 
  	movdqu xmm6, xmm5
 	pmullw xmm5, [md2] 
@@ -815,11 +849,10 @@ mov [restar_top], rsi
 	haddps xmm10, xmm12					;xmm10 = 0 | 0| 1+2 | 3+4
 	haddps xmm10, xmm12					;xmm10 = 0 | 0 | 0 | 1+2+3+4
 	
-	mov edi, 600
-	movd xmm11, edi
+	movd xmm11, [seiscientos]
 	cvtdq2ps xmm11, xmm11
 	divss xmm10, xmm11
-	cvtss2si eax, xmm12	;convierte single-float_point a dword int y guarda en esi
+	cvttss2si eax, xmm10	;convierte single-float_point a dword int y guarda en esi
 	mov [r15+r11], al
 
 	add r11d, 1
@@ -829,7 +862,7 @@ mov [restar_top], rsi
 ;--------------------ROJOS----------------------
 ;---------------------xmm0----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm0
+	movdqu xmm5, xmm0
 	pshufb xmm5, [mask_btow_r]
 
  	movdqu xmm6, xmm5
@@ -847,7 +880,7 @@ mov [restar_top], rsi
 	addps xmm10, xmm7
 ;---------------------xmm1----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm1
+	movdqu xmm5, xmm1
 	pshufb xmm5, [mask_btow_r]
 
  	movdqu xmm6, xmm5
@@ -865,7 +898,7 @@ mov [restar_top], rsi
 	addps xmm10, xmm7
 ;---------------------xmm2----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm2
+	movdqu xmm5, xmm2
 	pshufb xmm5, [mask_btow_r]
 
  	movdqu xmm6, xmm5
@@ -883,7 +916,7 @@ mov [restar_top], rsi
 	addps xmm10, xmm7
 ;---------------------xmm3----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm3
+	movdqu xmm5, xmm3
 	pshufb xmm5, [mask_btow_r]
 
  	movdqu xmm6, xmm5
@@ -901,7 +934,7 @@ mov [restar_top], rsi
 	addps xmm10, xmm7
 ;---------------------xmm4----------------------
 	pxor xmm5, xmm5
-	movq xmm5, xmm4
+	movdqu xmm5, xmm4
 	pshufb xmm5, [mask_btow_r]
 
  	movdqu xmm6, xmm5
@@ -924,19 +957,19 @@ mov [restar_top], rsi
 	haddps xmm10, xmm12					;xmm10 = 0 | 0| 1+2 | 3+4
 	haddps xmm10, xmm12					;xmm10 = 0 | 0 | 0 | 1+2+3+4
 	
-	mov edi, 600
-	movd xmm11, edi
+	movd xmm11, [seiscientos]
 	cvtdq2ps xmm11, xmm11
 	divss xmm10, xmm11
-	cvtss2si eax, xmm12	;convierte single-float_point a dword int y guarda en esi
+	cvttss2si eax, xmm10	;convierte single-float_point a dword int y guarda en esi
 	mov [r15+r11], al
 
 ;ACA YA SE CAMBIO EL PIXEL ACTUAL
 
 	add r11d, 1
 	cmp r11d, r10d
-	je .fin_iteraciones_bot
+	jg .fin_iteraciones_bot
 	jmp .iteraciones_bot
+	
 
 .fin_iteraciones_bot:
 
@@ -954,9 +987,10 @@ mov [restar_top], rsi
 	sub r13d, [restar_bot]
 	sub r12d, [restar_top]
 
+;hasta aca anda.
+
 
 ;copiar dst a src: (optimizar para copiar unicamente las bandas modificadas que se perdio la informacion)..
-.debug:
 	xor rdi, rdi
 	pxor xmm0, xmm0
 	pxor xmm1, xmm1
@@ -966,7 +1000,7 @@ mov [restar_top], rsi
 	CVTDQ2PS xmm0, xmm0
 	mulps xmm1, xmm0		;xmm1 = 0|0|0|height*width(float)
 	cvtss2si edi, xmm1
-	;movd edi, xmm1
+
 	mov esi, edi
 	add edi, edi
 	add edi, esi			;edi = height*width*3
@@ -975,8 +1009,8 @@ mov [restar_top], rsi
 	mov esi, 0
 
 .copiar:
-	movdqu xmm0, [r15 + rdi]
-	movdqu [r14 + rdi], xmm0
+	movdqu xmm0, [r15 + rsi]
+	movdqu [r14 + rsi], xmm0
 	add esi, 16
 	cmp esi, edi
 	jg .salir_copiar
@@ -996,11 +1030,3 @@ mov [restar_top], rsi
 	pop R11
 	pop RBP
     ret
-
-
-
-
-
-
-
-
