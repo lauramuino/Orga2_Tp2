@@ -102,7 +102,7 @@ color_filter_asm:
 	
 .inicio:
 	cmp R14, 0
-	jl .fin
+	jle .fin
 .levantar_pixeles:
 	;Muevo a XMM0 4 pixeles + 4 byte de basura
 	pxor XMM0, XMM0 ;Vacio XMM0
@@ -111,6 +111,7 @@ color_filter_asm:
 	cmp R14, 12 ;Si es un caso borde
 	jne .no_borde
 	sub RDI, 4 ;Retrocedo el cursor
+	sub RSI, 4
 	movdqu XMM0, [RDI]
 	psrldq XMM0, 4
 	jmp .continuo ;Proceso como siempre
