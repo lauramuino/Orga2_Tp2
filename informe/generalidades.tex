@@ -1,0 +1,7 @@
+\subsection{Comentarios Generales}
+	
+	El principal objetivo de este trabajo pr\'actico es ver como utilizar las instrucciones $SSE$ disponibles en un procesador x86-64 para procesar datos provenientes de im\'agenes de una forma paralela y con pocos ciclos de clock y ver como se compara con la versi\'on en $C$ que generalmente no aprovecha estos registros y utiliza mucho m\'as la memoria.
+	
+	La administraci\'on de frames de video como im\'agenes y la apertura o clausura de archivos de video no fueron la principal preocupaci\'on del trabajo ya que se nos provey\'o de antemano un framework para poder procesar video y de esta manera poder enfocarse solamente en el desarrollo de los filtros. 
+	
+	Una cosa que se hizo evidente mientras se desarrollaba el trabajo es como al estar en control directamente de las instrucciones del procesador y sin tener que pasar por un compilador se puede obtener implementaciones m\'as r\'apidas en $ASM$ que en $C$. Sin embargo, programar en $ASM$, un lenguaje ensamblador, pone mucha m\'as carga sobre el programador a la hora de tratar los datos como corresponde; esto no sucede en $C$, un lenguaje fuertemente tipado donde todas las variables tienen un tipo definido y m\'etodos asociados a ellos. Uno tiene que ser m\'as responsable cuando lee datos en registros o memoria ya que no hay forma de saber autom\'aticamente con que tipo de datos estamos operando.

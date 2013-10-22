@@ -10,7 +10,7 @@ void decode_c(unsigned char* src,
 // width y height = ancho y alto en pixeles de la imagen
 
     unsigned int p = 0;
-    unsigned int cantValores = width*height*3;
+    //unsigned int cantValores = width*height*3;
     unsigned char loscuatro[4];
     unsigned char caracter = 1;
     unsigned int pcode = 0;
